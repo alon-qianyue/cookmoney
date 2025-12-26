@@ -7,9 +7,10 @@ from typing import Dict, List, Optional
 import mimetypes
 
 from PIL import Image
-import PyPDF2
+from pypdf import PdfReader
 import requests
 from bs4 import BeautifulSoup
+import chardet
 
 from .config import SUPPORTED_IMAGE_FORMATS, SUPPORTED_TEXT_FORMATS, MAX_FILE_SIZE_MB
 
@@ -71,7 +72,7 @@ class FileProcessor:
         
         text_content = []
         with open(file_path, "rb") as f:
-            pdf_reader = PyPDF2.PdfReader(f)
+            pdf_reader = PdfReader(f)
             for page_num, page in enumerate(pdf_reader.pages):
                 text = page.extract_text()
                 if text.strip():
@@ -84,12 +85,26 @@ class FileProcessor:
             "pages": len(pdf_reader.pages)
         }
     
+    def _detect_encoding(self, file_path: Path) -> str:
+        """Detect file encoding"""
+        with open(file_path, "rb") as f:
+            raw_data = f.read(10000)  # Read first 10KB for detection
+            result = chardet.detect(raw_data)
+            return result['encoding'] or 'utf-8'
+    
     def process_text_file(self, file_path: Path) -> Dict[str, str]:
         """Read text file content"""
         self.validate_file(file_path)
         
-        with open(file_path, "r", encoding="utf-8") as f:
-            content = f.read()
+        # Try UTF-8 first, then detect encoding if it fails
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
+        except UnicodeDecodeError:
+            # Fallback to encoding detection
+            encoding = self._detect_encoding(file_path)
+            with open(file_path, "r", encoding=encoding, errors='replace') as f:
+                content = f.read()
         
         return {
             "type": "text",
@@ -101,8 +116,15 @@ class FileProcessor:
         """Extract text from HTML file"""
         self.validate_file(file_path)
         
-        with open(file_path, "r", encoding="utf-8") as f:
-            html_content = f.read()
+        # Try UTF-8 first, then detect encoding if it fails
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                html_content = f.read()
+        except UnicodeDecodeError:
+            # Fallback to encoding detection
+            encoding = self._detect_encoding(file_path)
+            with open(file_path, "r", encoding=encoding, errors='replace') as f:
+                html_content = f.read()
         
         soup = BeautifulSoup(html_content, "html.parser")
         

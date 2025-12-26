@@ -20,6 +20,7 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o")
 
 # Application Settings
 MAX_FILE_SIZE_MB = int(os.getenv("MAX_FILE_SIZE_MB", "10"))
+MAX_CONTENT_CHARS = int(os.getenv("MAX_CONTENT_CHARS", "10000"))
 SUPPORTED_IMAGE_FORMATS = os.getenv("SUPPORTED_IMAGE_FORMATS", "jpg,jpeg,png,gif,webp").split(",")
 SUPPORTED_TEXT_FORMATS = os.getenv("SUPPORTED_TEXT_FORMATS", "txt,md,pdf,html").split(",")
 

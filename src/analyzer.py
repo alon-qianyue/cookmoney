@@ -8,7 +8,7 @@ from pathlib import Path
 
 from openai import OpenAI
 
-from .config import OPENAI_API_KEY, OPENAI_MODEL, ANALYSIS_DIR
+from .config import OPENAI_API_KEY, OPENAI_MODEL, ANALYSIS_DIR, MAX_CONTENT_CHARS
 from .file_processor import FileProcessor
 
 
@@ -52,7 +52,7 @@ class AIAnalyzer:
 === 研报文件 {idx+1}: {file_data['file_name']} ===
 格式: {file_data['format']}
 内容:
-{file_data['content'][:10000]}  # Limit to first 10000 chars per file
+{file_data['content'][:MAX_CONTENT_CHARS]}
 """)
         
         messages.append({
@@ -151,7 +151,7 @@ class AIAnalyzer:
             elif file_data["type"] == "text":
                 content_parts.append({
                     "type": "text",
-                    "text": f"\n=== 文本 {idx+1}: {file_data['file_name']} ===\n{file_data['content'][:10000]}\n"
+                    "text": f"\n=== 文本 {idx+1}: {file_data['file_name']} ===\n{file_data['content'][:MAX_CONTENT_CHARS]}\n"
                 })
         
         messages.append({
